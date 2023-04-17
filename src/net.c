@@ -203,9 +203,9 @@ int ndm_net_getaddrinfo(
 
 	char buf[NDM_NET_ANSWER_MAX_SIZE_];
 
-	/* request is "resolv-conf a <fqdn>" */
+	/* request is "resolv-conf <so_mark> a <fqdn>" */
 
-	const int req_len = snprintf(buf, sizeof(buf), "resolv-conf a %s", node);
+	const int req_len = snprintf(buf, sizeof(buf), "resolv-conf 0 a %s", node);
 
 	if (req_len < 0) {
 		return EAI_SYSTEM;
