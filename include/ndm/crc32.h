@@ -4,6 +4,10 @@
 #include <stdint.h>
 #include <stddef.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 struct ndm_crc32_t
 {
 	uint32_t digest_;
@@ -32,6 +36,10 @@ ndm_crc32_digest(
 {
 	return crc32->digest_ ^ UINT32_MAX;
 }
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* __NDM_CRC32_H__ */
 

@@ -4,6 +4,10 @@
 #include <stdarg.h>
 #include "attr.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 int ndm_asprintf(
 		char **strp,
 		const char *const format,
@@ -27,6 +31,10 @@ int ndm_vabsprintf(
 		char **strp,
 		const char *const format,
 		va_list ap)  NDM_ATTR_PRINTF(4, 0);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif	/* __NDM_STDIO_H__ */
 

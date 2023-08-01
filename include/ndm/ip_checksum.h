@@ -4,6 +4,10 @@
 #include <stdint.h>
 #include "attr.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /**
  * Perform an intermediate calculation of the 32-bit checksum for the array
  * pointed by @a data, the size of @a octet_count.
@@ -43,6 +47,10 @@ uint16_t ndm_ip_checksum_finish(
 uint16_t ndm_ip_checksum(
 		const void *packet,
 		const unsigned long packet_size) NDM_ATTR_WUR;
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif	/* __NDM_IP_CHECKSUM_H__ */
 

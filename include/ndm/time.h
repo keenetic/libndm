@@ -7,6 +7,10 @@
 #include <sys/time.h>
 #include "attr.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 extern const struct timespec NDM_TIME_ZERO;
 
 #define NDM_TIME_SEC									1
@@ -166,6 +170,10 @@ void ndm_time_get_monotonic_plus_msec(
 
 int64_t ndm_time_left_monotonic_msec(
 		const struct timespec *t);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif	/* __NDM_TIME_H__ */
 

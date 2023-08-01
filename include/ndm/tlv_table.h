@@ -4,6 +4,10 @@
 #include <stdint.h>
 #include <stddef.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #define NDM_TLV_TABLE_ALIGNMENT						8U
 
 struct ndm_tlv_table_t;
@@ -62,5 +66,9 @@ ptrdiff_t
 ndm_tlv_table_img_offs_crc(
 		const struct ndm_tlv_table_t *const tlv_table,
 		size_t *const crc_len);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* __NDM_TLV_TABLE__ */

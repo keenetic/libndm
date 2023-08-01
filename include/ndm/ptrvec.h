@@ -6,6 +6,10 @@
 #include <stdbool.h>
 #include "attr.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #define NDM_PTRVEC_INITIALIZER									\
 	{.data_ = NULL, .size_ = 0}
 
@@ -146,6 +150,10 @@ static inline void **ndm_ptrvec_ptr(
 {
 	return v->data_;
 }
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* __NDM_PTRVEC_H__ */
 

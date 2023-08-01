@@ -4,6 +4,10 @@
 #include <stdint.h>
 #include <stdbool.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 static inline bool ndm_endian_is_le()
 {
 	/* @c TEST_ should not be static to allow compile-time optimization. */
@@ -135,6 +139,10 @@ static inline uint64_t ndm_endian_htobe64(const uint64_t x)
 {
 	return ndm_endian_betoh64(x);
 }
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif	/* __NDM_ENDIAN_H__ */
 

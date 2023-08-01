@@ -5,6 +5,10 @@
 #include <stdbool.h>
 #include "attr.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #define NDM_STRACC_INITIALIZER							\
 	{.__data = NULL, .__size = 0, .__is_valid = true}
 
@@ -70,6 +74,10 @@ const char *ndm_stracc_next_cstr(
 
 void ndm_stracc_clear(
 		struct ndm_stracc_t *a);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif	/* __NDM_STRACC_H__ */
 

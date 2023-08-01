@@ -6,6 +6,10 @@
 #include "attr.h"
 #include "macro.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 enum level_t
 {
 	LINFO,
@@ -64,6 +68,10 @@ void ndm_vlog(
 #define NDM_LOG_DEBUG_1(fmt, args...)	ndm_log_debug(LDEBUG_1, fmt, ##args)
 #define NDM_LOG_DEBUG_2(fmt, args...)	ndm_log_debug(LDEBUG_2, fmt, ##args)
 #define NDM_LOG_DEBUG_3(fmt, args...)	ndm_log_debug(LDEBUG_3, fmt, ##args)
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif	/* __NDM_LOG_H__ */
 

@@ -4,6 +4,10 @@
 #include <stdbool.h>
 #include "attr.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 struct addrinfo;
 
 bool ndm_net_is_domain_name(const char *const name) NDM_ATTR_WUR;
@@ -17,6 +21,10 @@ int ndm_net_getaddrinfo(
 void ndm_net_freeaddrinfo(struct addrinfo *res);
 
 const char *ndm_net_gai_strerror(int errcode);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif	/* __NDM_NET_H__ */
 

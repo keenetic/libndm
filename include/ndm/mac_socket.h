@@ -6,6 +6,10 @@
 #include "attr.h"
 #include "mac_addr.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #define NDM_MAC_SOCKET_INITIALIZER							\
 	{.__fd = -1, .__protocol = 0}
 
@@ -54,6 +58,10 @@ static inline int ndm_mac_socket_fd(
 {
 	return s->__fd;
 }
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif	/* __NDM_MAC_SOCKET_H__ */
 

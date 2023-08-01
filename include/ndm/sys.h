@@ -6,6 +6,10 @@
 #include <stdbool.h>
 #include "attr.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #define NDM_SYS_SLEEP_GRANULARITY_MSEC			333
 
 bool ndm_sys_init() NDM_ATTR_WUR;
@@ -23,6 +27,10 @@ const struct timespec *ndm_sys_sleep_granularity() NDM_ATTR_WUR;
 
 bool ndm_sys_is_interrupted() NDM_ATTR_WUR;
 void ndm_sys_set_interrupted();
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif	/* __NDM_SYS_H__ */
 

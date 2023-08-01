@@ -7,6 +7,10 @@
 #include "code.h"
 #include "attr.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /**
  * Period of cached data relevance in milliseconds.
  */
@@ -1206,6 +1210,10 @@ enum ndm_core_response_error_t ndm_core_request_first_bool_pf(
 		bool *value,
 		const char *const value_path_format,
 		...) NDM_ATTR_WUR NDM_ATTR_PRINTF(8, 9);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif	/* __NDM_CORE_H__ */
 

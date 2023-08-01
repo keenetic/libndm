@@ -5,6 +5,10 @@
 #include <stdbool.h>
 #include "attr.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #define NDM_STRVEC_INITIALIZER									\
 	{.__data = NULL, .__size = 0}
 
@@ -161,6 +165,10 @@ void ndm_strvec_sort_ascending(
 		struct ndm_strvec_t *v);
 void ndm_strvec_sort_descending(
 		struct ndm_strvec_t *v);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif	/* __NDM_STRVEC_H__ */
 

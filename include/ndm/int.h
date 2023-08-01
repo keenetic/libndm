@@ -6,6 +6,10 @@
 #include <stdbool.h>
 #include "attr.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /**
  * Non-zero value if @a t is a signed integer type, @c 0 — otherwise.
  *
@@ -235,6 +239,10 @@ bool ndm_int_parse_llong(
 bool ndm_int_parse_ullong(
 		const char *const str,
 		unsigned long long *value) NDM_ATTR_WUR;
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif	/* __NDM_INT_H__ */
 

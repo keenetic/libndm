@@ -5,6 +5,10 @@
 #include <stdbool.h>
 #include "attr.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 struct ndm_pool_t
 {
 	void *const __static_block;
@@ -82,6 +86,10 @@ static inline size_t ndm_pool_total_dynamic_size(
 {
 	return pool->__total_dynamic_size;
 }
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif	/* __NDM_POOL__ */
 

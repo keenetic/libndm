@@ -7,6 +7,10 @@
 #include "attr.h"
 #include "ptrvec.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #define NDM_STRMAP_INITIALIZER_DEFAULT								\
 	{																\
 		.vec_ = NDM_PTRVEC_INITIALIZER,								\
@@ -178,6 +182,10 @@ static inline bool ndm_strmap_has(
 void ndm_strmap_swap(
 		struct ndm_strmap_t *lmap,
 		struct ndm_strmap_t *rmap);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* __NDM_STRMAP_H__ */
 

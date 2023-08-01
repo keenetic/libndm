@@ -3,6 +3,10 @@
 
 #include <stdbool.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /**
  * Describes the minimal entry of a doubly-linked list.
  *
@@ -190,6 +194,10 @@ static inline size_t ndm_dlist_size(
 		 n = ndm_dlist_entry(e->member.next, type, member);			\
 		 &e->member != (head);										\
 		 e = n, n = ndm_dlist_entry(n->member.next, type, member))
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif	/* __NDM_DLIST_H__ */
 

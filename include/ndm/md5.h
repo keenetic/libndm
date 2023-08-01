@@ -3,6 +3,10 @@
 
 #include <stdint.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #define NDM_MD5_TEXT_BUFFER_SIZE									33
 #define NDM_MD5_BINARY_BUFFER_SIZE									16
 
@@ -34,6 +38,10 @@ void ndm_md5_digest(
 const char* ndm_md5_text_digest(
 		struct ndm_md5_t *md5,
 		char text[NDM_MD5_TEXT_BUFFER_SIZE]);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* __NDM_MD5_H__ */
 

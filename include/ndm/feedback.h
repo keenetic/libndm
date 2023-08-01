@@ -5,6 +5,10 @@
 #include <stdbool.h>
 #include "attr.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /**
  * The character which is used to separate the environment variables
  * in the format string when ndm_feedback() is calling. Now it is newline
@@ -83,6 +87,10 @@ bool ndm_feedback_ve(
 		const int64_t timeout_msec,
 		const char *const argv[],
 		const char *const env_argv[]) NDM_ATTR_WUR;
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif	/* __NDM_FEEDBACK_H__ */
 

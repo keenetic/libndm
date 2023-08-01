@@ -8,6 +8,10 @@
 #include <netinet/in.h>
 #include "attr.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /**
  * Size of the buffer to store the string representation of IP address
  * of the maximum length.
@@ -392,6 +396,10 @@ static inline socklen_t ndm_ip_sockaddr_size(
 		sizeof(struct sockaddr_in) :
 		sizeof(struct sockaddr_in6));
 }
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif	/* __NDM_IP_SOCKADDR_H__ */
 

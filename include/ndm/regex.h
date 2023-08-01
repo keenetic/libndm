@@ -5,6 +5,10 @@
 #include <stdbool.h>
 #include "attr.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 struct ndm_regex_t;
 struct ndm_regex_matcher_t;
 
@@ -47,6 +51,10 @@ size_t ndm_regex_matcher_end(
 
 void ndm_regex_matcher_reset(
 		struct ndm_regex_matcher_t *matcher);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* __NDM_REGEX_H__ */
 

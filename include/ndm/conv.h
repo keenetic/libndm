@@ -5,6 +5,10 @@
 #include <stdint.h>
 #include "attr.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 typedef int32_t ndm_conv_t;
 
 /* iconv compatibility functions. */
@@ -31,6 +35,10 @@ size_t ndm_conv(
 
 int ndm_conv_close(
 		ndm_conv_t cd);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif	/* __NDM_CONV_H__ */
 

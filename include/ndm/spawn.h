@@ -5,6 +5,10 @@
 #include <sys/types.h>
 #include "attr.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #define NDM_SPAWN_INVALID_PID		((pid_t) -1)
 
 bool ndm_spawn_default_at_exec(
@@ -28,6 +32,10 @@ pid_t ndm_spawn_process(
 pid_t ndm_spawn(
 		const char *const argv[],
 		const char *const envp[]) NDM_ATTR_WUR;
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif	/* __NDM_SPAWN_H__ */
 

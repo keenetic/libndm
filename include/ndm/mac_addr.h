@@ -6,6 +6,10 @@
 #include <sys/socket.h>
 #include "attr.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #define NDM_MAC_SIZE 				6
 #define NDM_MAC_BUFSIZE				sizeof("00:00:00:00:00:00")
 
@@ -55,6 +59,10 @@ bool ndm_mac_addr_is_multicast(
 		const struct ndm_mac_addr_t *addr) NDM_ATTR_WUR;
 bool ndm_mac_addr_is_oui_enforced(
 		const struct ndm_mac_addr_t *addr) NDM_ATTR_WUR;
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif	/* __NDM_MAC_ADDR_H__ */
 

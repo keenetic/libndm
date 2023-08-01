@@ -7,6 +7,10 @@
 #include "attr.h"
 #include "pool.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 enum ndm_xml_node_type_t
 {
 	NDM_XML_NODE_TYPE_DOCUMENT,
@@ -327,6 +331,10 @@ struct ndm_xml_attr_t *ndm_xml_attr_next(
 struct ndm_xml_attr_t *ndm_xml_attr_prev(
 		const struct ndm_xml_attr_t *attr,
 		const char *const name) NDM_ATTR_WUR;
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif	/* __NDM_XML__ */
 

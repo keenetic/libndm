@@ -4,6 +4,10 @@
 #include <stdbool.h>
 #include "attr.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 enum ndm_json_print_flags_t
 {
 	NDM_JSON_PRINT_FLAGS_COMPACT						= 0x0001,
@@ -478,6 +482,10 @@ enum ndm_json_parse_error_t ndm_json_object_parse(
 		struct ndm_pool_t *pool,
 		char *json,
 		struct ndm_json_object_t **object) NDM_ATTR_WUR;
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* __NDM_JSON_H__ */
 
