@@ -345,7 +345,7 @@ int ndm_net_getaddrinfo(
 		return EAI_AGAIN;
 	}
 
-	/* Third answer is a list of "<fqdn> <a> <address> " */
+	/* Third answer is a list of "<fqdn> <a> <address> <ttl>" */
 
 	char *p = buf;
 
@@ -374,6 +374,8 @@ int ndm_net_getaddrinfo(
 		}
 
 		*p = ch;
+		ndm_net_skip_spaces(&p);
+		ndm_net_skip_nonspaces(&p); /* skip TTL */
 		ndm_net_skip_spaces(&p);
 	}
 
