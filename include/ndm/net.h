@@ -8,6 +8,8 @@
 extern "C" {
 #endif
 
+#define AI_RECURSIVE							0x8000
+
 struct addrinfo;
 
 bool ndm_net_is_domain_name(const char *const name) NDM_ATTR_WUR;

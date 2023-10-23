@@ -10,6 +10,7 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netdb.h>
+#include <ndm/log.h>
 #include <ndm/net.h>
 #include <ndm/int.h>
 #include <ndm/poll.h>
@@ -23,10 +24,14 @@
 #define NDM_NET_NDN_RPC_PORT_			54321
 #define NDM_NET_NDN_RPC_TIMEOUT_		5000 // ms
 
+#define NDM_NET_NDN_RPC_F_RECURSIVE_	(1 << 0)
+
 #define NDM_NET_ANSWER_NOT_RES_			"not resolved"
 #define NDM_NET_ANSWER_POLL_			"poll "
 
 #define NDM_NET_ANSWER_MAX_SIZE_		(16 * 1024)
+
+#define AI_SYSTEM						0x4000
 
 #define NDM_NET_AI_FLAGS_ANY_			\
 	(AI_PASSIVE		| \
@@ -35,6 +40,7 @@
 	 AI_ADDRCONFIG	| \
 	 AI_V4MAPPED	| \
 	 AI_NUMERICSERV	| \
+	 AI_RECURSIVE	| \
 	 AI_ALL)
 
 bool ndm_net_is_domain_name(const char *const name)
@@ -87,12 +93,18 @@ bool ndm_net_is_domain_name(const char *const name)
 static int ndm_net_fill_addrinfo(
 		const char *const node,
 		struct addrinfo *prev,
-		struct addrinfo **res)
+		struct addrinfo **res,
+		const int ai_socktype,
+		const uint16_t port)
 {
 	struct ndm_ip_sockaddr_t sa = NDM_IP_SOCKADDR_ANY;
 
 	if (!ndm_ip_sockaddr_pton(node, &sa)) {
 		return EAI_NONAME;
+	}
+
+	if (port != 0) {
+		ndm_ip_sockaddr_set_port(&sa, (uint16_t)port);
 	}
 
 	struct addrinfo *r;
@@ -106,6 +118,7 @@ static int ndm_net_fill_addrinfo(
 	}
 
 	r->ai_family = ndm_ip_sockaddr_family(&sa);
+	r->ai_socktype = ai_socktype;
 	r->ai_addrlen = addrlen;
 	r->ai_addr = (struct sockaddr *) (((uint8_t *) r) + info_size);
 	r->ai_next = prev;
@@ -141,10 +154,19 @@ int ndm_net_getaddrinfo(
 		const struct addrinfo *hints,
 		struct addrinfo **res)
 {
-	if (service != NULL) {
-		errno = EINVAL;
+	uint16_t port = 0;
 
-		return EAI_SYSTEM;
+	if (service != NULL) {
+		char *endptr = NULL;
+		const unsigned long p = strtoul(service, &endptr, 10);
+
+		if ((endptr && *endptr != '\0') || p == 0 || p >= UINT16_MAX) {
+			errno = EINVAL;
+
+			return EAI_SYSTEM;
+		}
+
+		port = (uint16_t)p;
 	}
 
 	if (res == NULL) {
@@ -179,7 +201,8 @@ int ndm_net_getaddrinfo(
 		return EAI_BADFLAGS;
 	}
 
-	int exit_code = ndm_net_fill_addrinfo(node, NULL, res);
+	int exit_code = ndm_net_fill_addrinfo(node, NULL, res,
+		hints->ai_socktype, port);
 
 	if (exit_code == 0) {
 		return 0;
@@ -190,7 +213,23 @@ int ndm_net_getaddrinfo(
 	}
 
 	if (hints->ai_flags & AI_NUMERICHOST) {
-		return EAI_NONAME;
+		struct addrinfo h;
+
+		memcpy(&h, hints, sizeof(h));
+
+		h.ai_flags &= ~AI_RECURSIVE;
+
+		exit_code = getaddrinfo(node, service, &h, res);
+
+		if (exit_code != 0) {
+			return exit_code;
+		}
+
+		if (res) {
+			(*res)->ai_flags |= AI_SYSTEM;
+		}
+
+		return exit_code;
 	}
 
 	if (!ndm_net_is_domain_name(node)) {
@@ -202,11 +241,15 @@ int ndm_net_getaddrinfo(
 	}
 
 	char buf[NDM_NET_ANSWER_MAX_SIZE_];
+	const unsigned int rpc_flags =
+		(hints->ai_flags & AI_RECURSIVE) ?
+			NDM_NET_NDN_RPC_F_RECURSIVE_ :
+			0;
 
 	/* request is "resolv-conf <so_mark> <flags> a <fqdn>" */
 
-	const int req_len = snprintf(buf, sizeof(buf), "resolv-conf 0 0 a %s",
-			node);
+	const int req_len = snprintf(buf, sizeof(buf), "resolv-conf 0 %u a %s",
+			rpc_flags, node);
 
 	if (req_len < 0) {
 		return EAI_SYSTEM;
@@ -364,7 +407,8 @@ int ndm_net_getaddrinfo(
 		const char ch = *p;
 
 		*p = '\0';
-		exit_code = ndm_net_fill_addrinfo(addr, *res, res);
+		exit_code = ndm_net_fill_addrinfo(
+			addr, *res, res, hints->ai_socktype, port);
 
 		if (exit_code != 0) {
 			ndm_net_freeaddrinfo(*res);
@@ -384,6 +428,11 @@ int ndm_net_getaddrinfo(
 
 void ndm_net_freeaddrinfo(struct addrinfo *res)
 {
+	if (res && res->ai_flags & AI_SYSTEM) {
+		freeaddrinfo(res);
+		return;
+	}
+
 	while (res != NULL) {
 		struct addrinfo *ai = res;
 
