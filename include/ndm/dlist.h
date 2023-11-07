@@ -1,6 +1,7 @@
 #ifndef __NDM_DLIST_H__
 #define __NDM_DLIST_H__
 
+#include <stddef.h>
 #include <stdbool.h>
 
 #ifdef __cplusplus
@@ -158,7 +159,7 @@ static inline size_t ndm_dlist_size(
  */
 
 #define ndm_dlist_entry(ptr, type, member)							\
-	((type *) (((char *) ptr) - ((char *) &((type *) 0)->member)))
+	((type *) (((char *) ptr) - offsetof(type, member)))
 
 /**
  * Macro for declaring a cycle that goes through all the entries of the list
