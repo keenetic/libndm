@@ -356,6 +356,8 @@ int ndm_net_getaddrinfo(
 		ndm_net_skip_spaces(&p);
 		ndm_net_skip_nonspaces(&p); /* skip address type */
 		ndm_net_skip_spaces(&p);
+		ndm_net_skip_nonspaces(&p); /* skip TTL */
+		ndm_net_skip_spaces(&p);
 
 		const char *const addr = p;
 
@@ -374,8 +376,6 @@ int ndm_net_getaddrinfo(
 		}
 
 		*p = ch;
-		ndm_net_skip_spaces(&p);
-		ndm_net_skip_nonspaces(&p); /* skip TTL */
 		ndm_net_skip_spaces(&p);
 	}
 
