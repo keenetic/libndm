@@ -24,23 +24,16 @@
 #include <ndm/visibility.h>
 #include <ndm/ip_sockaddr.h>
 
+#include "core.h"
+
 #define NDM_CORE_SOCKET_								"/var/run/ndm.core.socket"
 #define NDM_CORE_EVENT_SOCKET_							"/var/run/ndm.event.socket"
-#define NDM_CORE_FEEDBACK_SOCKET_						"/var/run/ndm.feedback.socket"
 
 /**
  * A default agent name should be an empty string
  * to prevent NDM agent changing.
  **/
 #define NDM_CORE_DEFAULT_AGENT_							""
-
-/**
- * During first @c NDM_CORE_INTBLOCK_TIMEOUT_ milliseconds
- * any core I/O operation always is in a non-interruptible state.
- * This allows to send requests or feedbacks while some short period
- * even when a process is in an interrupted state.
- **/
-#define NDM_CORE_INTBLOCK_TIMEOUT_						1000
 
 #define NDM_CORE_STATIC_BUFFER_SIZE_					1024
 
@@ -870,7 +863,7 @@ struct ndm_core_event_t *ndm_core_event_connection_get(
 		struct ndm_xml_node_t *root = NULL;
 
 		ndm_time_get_monotonic_plus_msec(
-			&intblock, NDM_CORE_INTBLOCK_TIMEOUT_);
+			&intblock, NDM_CORE_INTBLOCK_TIMEOUT);
 		ndm_time_get_monotonic_plus_msec(&deadline, connection->timeout);
 
 		ndm_xml_document_init(
@@ -1420,7 +1413,7 @@ static struct ndm_core_response_t *__ndm_core_do_request(
 	struct ndm_core_response_t *response = NULL;
 
 	request_static_buffer[0] = 0;
-	ndm_time_get_monotonic_plus_msec(&intblock, NDM_CORE_INTBLOCK_TIMEOUT_);
+	ndm_time_get_monotonic_plus_msec(&intblock, NDM_CORE_INTBLOCK_TIMEOUT);
 	ndm_time_get_monotonic_plus_msec(&deadline, core->timeout);
 
 	if (request_size == 0) {
@@ -2821,7 +2814,8 @@ enum ndm_core_response_error_t ndm_core_request_first_bool_pf(
 	return e;
 }
 
-static inline bool __ndm_core_feedback_send(
+__NDM_VISIBILITY_HIDDEN__
+bool ndm_core_send(
 		const int fd,
 		const struct timespec *intblock,
 		const struct timespec *deadline,
@@ -2936,7 +2930,8 @@ static inline bool __ndm_core_feedback_send(
 	return done;
 }
 
-static inline bool __ndm_core_feedback_recv(
+__NDM_VISIBILITY_HIDDEN__
+bool ndm_core_recv(
 		const int fd,
 		const struct timespec *intblock,
 		const struct timespec *deadline)
@@ -2996,51 +2991,3 @@ static inline bool __ndm_core_feedback_recv(
 
 	return done;
 }
-
-__NDM_VISIBILITY_HIDDEN__
-bool ndm_core_feedback_ve(
-		const int64_t timeout_msec,
-		const char *const argv[],
-		const char *const env_argv[])
-{
-	bool done = false;
-	int fd = socket(AF_UNIX, SOCK_STREAM, 0);
-
-	if (fd >= 0) {
-		int error = 0;
-		struct sockaddr_un sa;
-		const int n = snprintf(
-			sa.sun_path, sizeof(sa.sun_path),
-			"%s", NDM_CORE_FEEDBACK_SOCKET_);
-
-		if (n < 0 || n >= sizeof(sa.sun_path)) {
-			errno = ENOBUFS;
-		} else {
-			sa.sun_family = AF_UNIX;
-
-			if (connect(
-					fd, (struct sockaddr *) &sa,
-					(socklen_t) sizeof(sa)) == 0) {
-				struct timespec intblock;
-				struct timespec deadline;
-
-				ndm_time_get_monotonic_plus_msec(
-					&intblock, NDM_CORE_INTBLOCK_TIMEOUT_);
-				ndm_time_get_monotonic_plus_msec(
-					&deadline, NDM_CORE_DEFAULT_TIMEOUT);
-
-				done =
-					__ndm_core_feedback_send(
-						fd, &intblock, &deadline, argv, env_argv) &&
-					__ndm_core_feedback_recv(fd, &intblock, &deadline);
-			}
-		}
-
-		error = errno;
-		close(fd);
-		errno = error;
-	}
-
-	return done;
-}
-
