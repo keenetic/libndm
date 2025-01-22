@@ -37,7 +37,7 @@ CFLAGS     ?= -g3 -pipe -fPIC -std=c99 \
 			  -Wmissing-field-initializers -Wconversion \
 			  -Wredundant-decls -Wstack-protector -ftabstop=4 -Wshadow \
 			  -Wpointer-arith -I$(PWD)/include/ \
-			  -Wempty-body -Waddress -Wvla -Wtype-limits
+			  -Wempty-body -Waddress -Wvla -Wtype-limits -fsigned-char
 
 ifeq ($(UNAME),Darwin)
 SONAME     := -install_name
