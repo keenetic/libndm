@@ -3044,3 +3044,30 @@ bool ndm_core_feedback_ve(
 	return done;
 }
 
+bool ndm_core_write_stream_xml(
+		struct ndm_pool_t* pool,
+		struct ndm_xml_node_t* node,
+		uint8_t** out,
+		size_t* out_len)
+{
+	*out_len = __ndm_core_request_store(node, NULL, 0);
+
+	if (*out_len == 0) {
+		errno = EBADMSG;
+		return false;
+	}
+
+	*out = ndm_pool_malloc(pool, *out_len);
+
+	if (*out == NULL) {
+		errno = ENOMEM;
+		return false;
+	}
+
+	if (__ndm_core_request_store(node, *out, *out_len) != *out_len) {
+		errno = EILSEQ;
+		return false;
+	}
+
+	return true;
+}

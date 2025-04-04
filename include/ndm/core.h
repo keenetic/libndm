@@ -6,6 +6,7 @@
 #include <stdbool.h>
 #include "code.h"
 #include "attr.h"
+#include "pool.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -1210,6 +1211,12 @@ enum ndm_core_response_error_t ndm_core_request_first_bool_pf(
 		bool *value,
 		const char *const value_path_format,
 		...) NDM_ATTR_WUR NDM_ATTR_PRINTF(8, 9);
+
+bool ndm_core_write_stream_xml(
+		struct ndm_pool_t* pool,
+		struct ndm_xml_node_t* node,
+		uint8_t** out,
+		size_t* out_len);
 
 #ifdef __cplusplus
 }
