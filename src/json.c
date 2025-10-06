@@ -40,6 +40,8 @@
 #define NDM_JSON_PRINT_IDENT_STEP_			2	/* two spaces */
 #define NDM_JSON_PRINT_BUFSIZE_				4096
 
+#define NDM_JSON_MAX_DEPTH_					128
+
 NDM_BUILD_ASSERT(ndm_json_nonzero_buffer_size, NDM_JSON_PRINT_BUFSIZE_ > 0);
 
 #define NDM_JSON_IS_CHAR_LESS_SHORT_		(UCHAR_MAX < USHRT_MAX)
@@ -1546,10 +1548,12 @@ static enum ndm_json_parse_error_t ndm_json_parse_string_(
  **/
 
 static enum ndm_json_parse_error_t ndm_json_parse_array_(
+		const size_t depth,
 		struct ndm_json_parse_context_t_ *ctx,
 		struct ndm_json_array_t *array) NDM_ATTR_WUR;
 
 static enum ndm_json_parse_error_t ndm_json_parse_object_(
+		const size_t depth,
 		struct ndm_json_parse_context_t_ *ctx,
 		struct ndm_json_object_t *object) NDM_ATTR_WUR;
 
@@ -1560,6 +1564,7 @@ static enum ndm_json_parse_error_t ndm_json_parse_object_(
  **/
 
 static enum ndm_json_parse_error_t ndm_json_parse_value_(
+		const size_t depth,
 		struct ndm_json_parse_context_t_ *ctx,
 		struct ndm_json_value_t **value)
 {
@@ -1650,7 +1655,8 @@ static enum ndm_json_parse_error_t ndm_json_parse_value_(
 			return NDM_JSON_PARSE_ERROR_OOM;
 		}
 
-		return ndm_json_parse_array_(ctx, ndm_json_value_array(*value));
+		return ndm_json_parse_array_(
+			depth + 1, ctx, ndm_json_value_array(*value));
 	}
 
 	/* Parse an object. */
@@ -1660,7 +1666,8 @@ static enum ndm_json_parse_error_t ndm_json_parse_value_(
 			return NDM_JSON_PARSE_ERROR_OOM;
 		}
 
-		return ndm_json_parse_object_(ctx, ndm_json_value_object(*value));
+		return ndm_json_parse_object_(
+			depth + 1, ctx, ndm_json_value_object(*value));
 	}
 
 	/* Parse a string. */
@@ -1872,9 +1879,14 @@ static enum ndm_json_parse_error_t ndm_json_parse_value_(
  **/
 
 static enum ndm_json_parse_error_t ndm_json_parse_array_(
+		const size_t depth,
 		struct ndm_json_parse_context_t_ *ctx,
 		struct ndm_json_array_t *array)
 {
+	if (depth > NDM_JSON_MAX_DEPTH_) {
+		return NDM_JSON_PARSE_ERROR_MAX_DEPTH_REACHED;
+	}
+
 	assert (*ctx->json == '[');
 
 	/* Skip '['. */
@@ -1893,7 +1905,7 @@ static enum ndm_json_parse_error_t ndm_json_parse_array_(
 	do {
 		struct ndm_json_value_t *value = NULL;
 		enum ndm_json_parse_error_t code =
-			ndm_json_parse_value_(ctx, &value);
+			ndm_json_parse_value_(depth, ctx, &value);
 
 		if (code != NDM_JSON_PARSE_ERROR_OK) {
 			if (code == NDM_JSON_PARSE_ERROR_UNKNOWN_TYPE &&
@@ -1947,9 +1959,14 @@ static enum ndm_json_parse_error_t ndm_json_parse_array_(
  **/
 
 static enum ndm_json_parse_error_t ndm_json_parse_object_(
+		const size_t depth,
 		struct ndm_json_parse_context_t_ *ctx,
 		struct ndm_json_object_t *object)
 {
+	if (depth > NDM_JSON_MAX_DEPTH_) {
+		return NDM_JSON_PARSE_ERROR_MAX_DEPTH_REACHED;
+	}
+
 	assert (*ctx->json == '{');
 
 	/* Skip '{'. */
@@ -2005,7 +2022,7 @@ static enum ndm_json_parse_error_t ndm_json_parse_object_(
 
 		struct ndm_json_value_t *value = NULL;
 
-		code = ndm_json_parse_value_(ctx, &value);
+		code = ndm_json_parse_value_(depth, ctx, &value);
 
 		if (code != NDM_JSON_PARSE_ERROR_OK) {
 			if (code == NDM_JSON_PARSE_ERROR_UNKNOWN_TYPE &&
@@ -2080,7 +2097,7 @@ static enum ndm_json_parse_error_t ndm_json_parse_(
 			NDM_JSON_PARSE_ERROR_EMPTY_DOCUMENT :
 			fail_code;
 	} else {
-		code = ndm_json_parse_value_(&ctx, value);
+		code = ndm_json_parse_value_(0, &ctx, value);
 
 		if (code == NDM_JSON_PARSE_ERROR_OK) {
 			ndm_json_parse_whitespaces_(&ctx);
