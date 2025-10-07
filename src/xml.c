@@ -28,6 +28,8 @@
 #include <ndm/int.h>
 #include <ndm/xml.h>
 
+#define NDM_XML_MAX_DEPTH_						128
+
 struct ndm_xml_node_t
 {
 	const char *name;
@@ -978,6 +980,7 @@ __ndm_xml_parser_parse_cdata(
 
 static enum ndm_xml_document_parse_error_t
 __ndm_xml_parser_parse_node_contents(
+		const size_t depth,
 		struct ndm_xml_document_t *doc,
 		char **ptext,
 		struct ndm_xml_node_t *node,
@@ -985,6 +988,7 @@ __ndm_xml_parser_parse_node_contents(
 
 static enum ndm_xml_document_parse_error_t
 __ndm_xml_parser_parse_element(
+		const size_t depth,
 		struct ndm_xml_document_t *doc,
 		char **ptext,
 		const enum ndm_xml_document_parse_flags_t flags,
@@ -1046,7 +1050,7 @@ __ndm_xml_parser_parse_element(
 		ndm_xml_node_set_name(*element, name);
 
 		code = __ndm_xml_parser_parse_node_contents(
-			doc, &text, *element, flags);
+			depth, doc, &text, *element, flags);
 
 		if (code != NDM_XML_DOCUMENT_PARSE_ERROR_OK) {
 			*ptext = text;
@@ -1081,6 +1085,7 @@ __ndm_xml_parser_parse_element(
 
 static enum ndm_xml_document_parse_error_t
 __ndm_xml_parser_parse_node(
+		const size_t depth,
 		struct ndm_xml_document_t *doc,
 		char **ptext,
 		const enum ndm_xml_document_parse_flags_t flags,
@@ -1089,6 +1094,10 @@ __ndm_xml_parser_parse_node(
 	enum ndm_xml_document_parse_error_t code =
 		NDM_XML_DOCUMENT_PARSE_ERROR_OK;
 	char *text = *ptext;
+
+	if (depth > NDM_XML_MAX_DEPTH_) {
+		return NDM_XML_DOCUMENT_PARSE_ERROR_MAX_DEPTH_REACHED;
+	}
 
 	/**
 	 * Parse proper node type.
@@ -1103,7 +1112,8 @@ __ndm_xml_parser_parse_node(
 			 * Parse and append element node
 			 **/
 
-			code = __ndm_xml_parser_parse_element(doc, &text, flags, node);
+			code = __ndm_xml_parser_parse_element(
+				depth, doc, &text, flags, node);
 			*ptext = text;
 
 			return code;
@@ -1390,6 +1400,7 @@ __ndm_xml_parser_parse_and_append_data(
 
 static enum ndm_xml_document_parse_error_t
 __ndm_xml_parser_parse_node_contents(
+		const size_t depth,
 		struct ndm_xml_document_t *doc,
 		char **ptext,
 		struct ndm_xml_node_t *node,
@@ -1507,7 +1518,7 @@ after_data_node:
 				++text;
 
 				code = __ndm_xml_parser_parse_node(
-					doc, &text, flags, &child);
+					depth + 1, doc, &text, flags, &child);
 
 				if (code != NDM_XML_DOCUMENT_PARSE_ERROR_OK) {
 					/**
@@ -1608,7 +1619,8 @@ static enum ndm_xml_document_parse_error_t __ndm_xml_parser_do(
 
 				++text;		/* Skip '<'. */
 
-				code = __ndm_xml_parser_parse_node(doc, &text, flags, &node);
+				code = __ndm_xml_parser_parse_node(
+					0, doc, &text, flags, &node);
 
 				if (code != NDM_XML_DOCUMENT_PARSE_ERROR_OK) {
 					return code;
