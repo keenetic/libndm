@@ -314,6 +314,34 @@ bool ndm_core_authenticate(
 		bool *authenticated) NDM_ATTR_WUR;
 
 /**
+ * Send a special request to authenticate a user-specified name and password,
+ * according to the current user database which is stored in the core. Function
+ * should be used in applications requiring access control at the user level.
+ *
+ * @param core Pointer to the core connection instance.
+ * @param user The specified user name.
+ * @param password The specified password.
+ * @param tag Tag, which a user must have for authentication success.
+ * @param authenticated A pointer to a variable that contains the authentication
+ * result.
+ * @param effective_user A pointer to a variable that contains the name of the
+ * "effective" user (which may differ from the username used for authentication).
+ * This variable may contain NULL. It is a caller's responsibility to free the
+ * memory returned from this function by calling the @a ndm_string_free().
+ *
+ * @returns @c true if completed successfully and @a authenticated contains
+ * correct value, @c false — otherwise (@a errno contains error code).
+ */
+
+bool ndm_core_authenticate_ex(
+		struct ndm_core_t *core,
+		const char *const user,
+		const char *const password,
+		const char *const tag,
+		bool *authenticated,
+		char **const effective_user) NDM_ATTR_WUR;
+
+/**
  * Check that a specified NDM command exists.
  *
  * @param core Pointer to the core connection instance.

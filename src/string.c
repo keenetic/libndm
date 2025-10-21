@@ -36,3 +36,7 @@ char *ndm_string_ndup(
 	return val;
 }
 
+void ndm_string_free(char *const s)
+{
+	free(s);
+}

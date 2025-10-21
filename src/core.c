@@ -1580,6 +1580,88 @@ bool ndm_core_authenticate(
 	return done;
 }
 
+bool ndm_core_authenticate_ex(
+		struct ndm_core_t *core,
+		const char *const user,
+		const char *const password,
+		const char *const tag,
+		bool *authenticated,
+		char **const effective_user)
+{
+	bool done = false;
+	uint8_t request_buffer[NDM_CORE_REQUEST_STATIC_SIZE_];
+	struct ndm_xml_document_t request;
+	struct ndm_xml_node_t *hello_node = NULL;
+	struct ndm_xml_node_t *request_node =
+		__ndm_core_request_document_init(&request,
+			request_buffer, sizeof(request_buffer),
+			core->agent);
+
+	*authenticated = false;
+
+	if (request_node != NULL &&
+		(hello_node = ndm_xml_node_append_child_str(
+			request_node, "hello", password)) != NULL &&
+		ndm_xml_node_append_attr_str(hello_node, "name", user) != NULL &&
+		ndm_xml_node_append_attr_str(hello_node, "tag", tag) != NULL)
+	{
+		struct ndm_core_response_t *response = __ndm_core_do_request(
+			core, NDM_CORE_MODE_NO_CACHE, true, request_node, NULL);
+
+		if (response != NULL) {
+			const struct ndm_xml_node_t *response_node =
+				ndm_core_response_root(response);
+			const struct ndm_xml_node_t *prompt_node =
+				ndm_xml_node_first_child(response_node, "prompt");
+
+			if( prompt_node == NULL )
+			{
+				done = true;
+
+			} else
+			if( effective_user == NULL )
+			{
+				*authenticated = true;
+				done = true;
+
+			} else
+			{
+				const struct ndm_xml_attr_t *user_attr =
+							ndm_xml_node_first_attr(prompt_node, "user");
+
+				if( user_attr == NULL )
+				{
+					*effective_user = NULL;
+					*authenticated = true;
+					done = true;
+
+				} else
+				{
+					*effective_user = ndm_string_ndup(
+											ndm_xml_attr_value(user_attr),
+											ndm_xml_attr_value_size(user_attr));
+
+					if( *effective_user == NULL )
+					{
+						errno = ENOMEM;
+
+					} else
+					{
+						*authenticated = true;
+						done = true;
+					}
+				}
+			}
+
+			ndm_core_response_free(&response);
+		}
+	}
+
+	ndm_xml_document_clear(&request);
+
+	return done;
+}
+
 bool ndm_core_find_command(
 		struct ndm_core_t *core,
 		const char *const command,

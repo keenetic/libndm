@@ -14,6 +14,8 @@ char *ndm_string_ndup(
 		const char *const s,
 		const size_t size) NDM_ATTR_WUR;
 
+void ndm_string_free(char *const s);
+
 #ifdef __cplusplus
 }
 #endif
