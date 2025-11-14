@@ -132,7 +132,15 @@ bool ndm_ptrvec_assign(
 		struct ndm_ptrvec_t *dst,
 		const struct ndm_ptrvec_t *src)
 {
-	void **data = (void **) malloc(
+	void **data;
+
+	if (ndm_ptrvec_is_empty(src)) {
+		ndm_ptrvec_clear(dst);
+
+		return true;
+	}
+
+	data = (void **) malloc(
 		((src->size_ + NDM_PTRVEC_BLOCK_SIZE_ - 1) &
 			~(NDM_PTRVEC_BLOCK_SIZE_ - 1)) * sizeof(void *));
 

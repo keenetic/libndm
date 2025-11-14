@@ -28,6 +28,8 @@ int main()
 	NDM_TEST(ndm_ptrvec_is_empty(&v));
 	NDM_TEST(ndm_ptrvec_ptr(&v) == NULL);
 
+	NDM_TEST(ndm_ptrvec_assign(&u, &v));
+
 	NDM_TEST_BREAK_IF(!ndm_ptrvec_push_back(&v, NULL));
 
 	NDM_TEST(ndm_ptrvec_size(&v) == 1);
