@@ -1599,6 +1599,10 @@ bool ndm_core_authenticate_ex(
 
 	*authenticated = false;
 
+	if (effective_user != NULL) {
+		*effective_user = NULL;
+	}
+
 	if (request_node != NULL &&
 		(hello_node = ndm_xml_node_append_child_str(
 			request_node, "hello", password)) != NULL &&
@@ -1625,7 +1629,6 @@ bool ndm_core_authenticate_ex(
 					ndm_xml_node_first_attr(prompt_node, "user");
 
 				if (user_attr == NULL) {
-					*effective_user = NULL;
 					*authenticated = true;
 					done = true;
 				} else {
