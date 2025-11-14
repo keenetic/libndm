@@ -1614,39 +1614,28 @@ bool ndm_core_authenticate_ex(
 			const struct ndm_xml_node_t *prompt_node =
 				ndm_xml_node_first_child(response_node, "prompt");
 
-			if( prompt_node == NULL )
-			{
+			if (prompt_node == NULL) {
 				done = true;
-
 			} else
-			if( effective_user == NULL )
-			{
+			if (effective_user == NULL) {
 				*authenticated = true;
 				done = true;
-
-			} else
-			{
+			} else {
 				const struct ndm_xml_attr_t *user_attr =
-							ndm_xml_node_first_attr(prompt_node, "user");
+					ndm_xml_node_first_attr(prompt_node, "user");
 
-				if( user_attr == NULL )
-				{
+				if (user_attr == NULL) {
 					*effective_user = NULL;
 					*authenticated = true;
 					done = true;
-
-				} else
-				{
+				} else {
 					*effective_user = ndm_string_ndup(
-											ndm_xml_attr_value(user_attr),
-											ndm_xml_attr_value_size(user_attr));
+						ndm_xml_attr_value(user_attr),
+						ndm_xml_attr_value_size(user_attr));
 
-					if( *effective_user == NULL )
-					{
+					if (*effective_user == NULL) {
 						errno = ENOMEM;
-
-					} else
-					{
+					} else {
 						*authenticated = true;
 						done = true;
 					}
