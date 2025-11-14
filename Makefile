@@ -60,7 +60,7 @@ endif
 
 ifeq ($(filter valgrind,$(MAKECMDGOALS)),valgrind)
 VG_TOOL    := $(shell which valgrind)
-VG         := $(if $(VG_TOOL),,$(error "No valgrind executable found"))
+VG         := $(if $(VG_TOOL),$(VG_TOOL) -q,$(error "No valgrind executable found"))
 endif
 
 LIB_BASE   := libndm
