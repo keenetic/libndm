@@ -15,6 +15,8 @@
 #include <ndm/poll.h>
 #include <ndm/ip_sockaddr.h>
 
+#define RPC_F_CONST_BYPASS				(1 << 2)
+
 #define NDM_NET_DOMAIN_MIN_LEN_			1
 #define NDM_NET_DOMAIN_MAX_LEN_			253
 
@@ -205,7 +207,9 @@ int ndm_net_getaddrinfo(
 
 	/* request is "resolv-conf <so_mark> <flags> a <fqdn>" */
 
-	const int req_len = snprintf(buf, sizeof(buf), "resolv-conf 0 0 a %s",
+	const unsigned int rpc_flags = (RPC_F_CONST_BYPASS);
+	const int req_len = snprintf(buf, sizeof(buf), "resolv-conf 0 %u a %s",
+			rpc_flags,
 			node);
 
 	if (req_len < 0) {
