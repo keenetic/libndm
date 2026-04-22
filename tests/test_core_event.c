@@ -73,9 +73,9 @@ int main()
 							const struct ndm_xml_node_t *v =
 								ndm_xml_node_first_child(r, NULL);
 
-							printf("event: \"%s\" at %li.%06li%s\n",
+							printf("event: \"%s\" at %lli.%06li%s\n",
 								ndm_core_event_type(e),
-								(long) raise_time.tv_sec,
+								(long long) raise_time.tv_sec,
 								(long) raise_time.tv_nsec/NDM_TIME_MSEC,
 								(v == NULL) ? "." : ", first level tags:");
 

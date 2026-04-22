@@ -903,13 +903,13 @@ struct ndm_core_event_t *ndm_core_event_connection_get(
 				const char *const raise_time_value =
 					ndm_xml_attr_value(raise_time);
 				char end;
-				long seconds = 0;
+				long long seconds = 0;
 				long milliseconds = 0;
 
 				if ((strchr(raise_time_value, '.') == NULL &&
-					 sscanf(raise_time_value, "%ld%c",
+					 sscanf(raise_time_value, "%lli%c",
 						&seconds, &end) == 1) ||
-					 sscanf(raise_time_value, "%ld.%ld%c",
+					 sscanf(raise_time_value, "%lli.%ld%c",
 						&seconds, &milliseconds, &end) == 2)
 				{
 					event->raise_time.tv_sec = (time_t) seconds;
