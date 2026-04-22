@@ -904,16 +904,16 @@ struct ndm_core_event_t *ndm_core_event_connection_get(
 					ndm_xml_attr_value(raise_time);
 				char end;
 				long long seconds = 0;
-				long milliseconds = 0;
+				long microseconds = 0;
 
 				if ((strchr(raise_time_value, '.') == NULL &&
 					 sscanf(raise_time_value, "%lli%c",
 						&seconds, &end) == 1) ||
 					 sscanf(raise_time_value, "%lli.%ld%c",
-						&seconds, &milliseconds, &end) == 2)
+						&seconds, &microseconds, &end) == 2)
 				{
 					event->raise_time.tv_sec = (time_t) seconds;
-					event->raise_time.tv_nsec = milliseconds*NDM_TIME_MSEC;
+					event->raise_time.tv_nsec = microseconds*NDM_TIME_MSEC;
 
 					done = true;
 				} else {
