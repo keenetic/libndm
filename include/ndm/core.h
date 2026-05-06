@@ -308,6 +308,7 @@ const char *ndm_core_agent(
 
 bool ndm_core_authenticate(
 		struct ndm_core_t *core,
+		const char *const l7proto,
 		const char *const user,
 		const char *const password,
 		const char *const tag,
@@ -333,13 +334,23 @@ bool ndm_core_authenticate(
  * correct value, @c false — otherwise (@a errno contains error code).
  */
 
-bool ndm_core_authenticate_ex(
+bool ndm_core_login(
 		struct ndm_core_t *core,
+		const char *const local,
+		const char *const remote,
+		const char *const l7proto,
 		const char *const user,
 		const char *const password,
 		const char *const tag,
+		const unsigned long timeout,
 		bool *authenticated,
-		char **const effective_user) NDM_ATTR_WUR;
+		char **const token) NDM_ATTR_WUR;
+
+bool ndm_core_authenticate_local_service(
+		struct ndm_core_t *core,
+		const char *const service,
+		const bool read_only,
+		bool *authenticated) NDM_ATTR_WUR;
 
 /**
  * Check that a specified NDM command exists.

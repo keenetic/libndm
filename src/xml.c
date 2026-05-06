@@ -2218,7 +2218,7 @@ struct ndm_xml_attr_t *ndm_xml_node_append_attr_int(
 	return ndm_xml_node_append_attr_str(node, name, str_value);
 }
 
-struct ndm_xml_attr_t *ndm_xml_append_attr_uint(
+struct ndm_xml_attr_t *ndm_xml_node_append_attr_uint(
 		struct ndm_xml_node_t *node,
 		const char *const name,
 		const uintmax_t value)

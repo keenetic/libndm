@@ -1538,6 +1538,7 @@ static struct ndm_xml_node_t *__ndm_core_request_document_init(
 
 bool ndm_core_authenticate(
 		struct ndm_core_t *core,
+		const char *const l7proto,
 		const char *const user,
 		const char *const password,
 		const char *const tag,
@@ -1557,6 +1558,16 @@ bool ndm_core_authenticate(
 	if (request_node != NULL &&
 		(hello_node = ndm_xml_node_append_child_str(
 			request_node, "hello", password)) != NULL &&
+		ndm_xml_node_append_attr_str(
+			hello_node, "level", "user-check") != NULL &&
+		ndm_xml_node_append_attr_str(
+			hello_node, "remote", "local") != NULL &&
+		ndm_xml_node_append_attr_str(
+			hello_node, "local", "local") != NULL &&
+		ndm_xml_node_append_attr_str(
+			hello_node, "l7-proto", l7proto) != NULL &&
+		ndm_xml_node_append_attr_str(
+			hello_node, "l3-proto", "unix") != NULL &&
 		ndm_xml_node_append_attr_str(hello_node, "name", user) != NULL &&
 		ndm_xml_node_append_attr_str(hello_node, "tag", tag) != NULL)
 	{
@@ -1580,13 +1591,17 @@ bool ndm_core_authenticate(
 	return done;
 }
 
-bool ndm_core_authenticate_ex(
+bool ndm_core_login(
 		struct ndm_core_t *core,
+		const char *const local,
+		const char *const remote,
+		const char *const l7proto,
 		const char *const user,
 		const char *const password,
 		const char *const tag,
+		const unsigned long timeout,
 		bool *authenticated,
-		char **const effective_user)
+		char **const token)
 {
 	bool done = false;
 	uint8_t request_buffer[NDM_CORE_REQUEST_STATIC_SIZE_];
@@ -1599,15 +1614,27 @@ bool ndm_core_authenticate_ex(
 
 	*authenticated = false;
 
-	if (effective_user != NULL) {
-		*effective_user = NULL;
+	if (token != NULL) {
+		*token = NULL;
 	}
 
 	if (request_node != NULL &&
 		(hello_node = ndm_xml_node_append_child_str(
 			request_node, "hello", password)) != NULL &&
+		ndm_xml_node_append_attr_str(
+			hello_node, "level", "user-login") != NULL &&
+		ndm_xml_node_append_attr_str(
+			hello_node, "remote", remote) != NULL &&
+		ndm_xml_node_append_attr_str(
+			hello_node, "local", local) != NULL &&
+		ndm_xml_node_append_attr_str(
+			hello_node, "l7-proto", l7proto) != NULL &&
+		ndm_xml_node_append_attr_str(
+			hello_node, "l3-proto", "unix") != NULL &&
 		ndm_xml_node_append_attr_str(hello_node, "name", user) != NULL &&
-		ndm_xml_node_append_attr_str(hello_node, "tag", tag) != NULL)
+		ndm_xml_node_append_attr_str(hello_node, "tag", tag) != NULL &&
+		ndm_xml_node_append_attr_str(hello_node, "auto-close", "no") != NULL &&
+		ndm_xml_node_append_attr_uint(hello_node, "timeout", timeout) != NULL)
 	{
 		struct ndm_core_response_t *response = __ndm_core_do_request(
 			core, NDM_CORE_MODE_NO_CACHE, true, request_node, NULL);
@@ -1621,22 +1648,22 @@ bool ndm_core_authenticate_ex(
 			if (prompt_node == NULL) {
 				done = true;
 			} else
-			if (effective_user == NULL) {
+			if (token == NULL) {
 				*authenticated = true;
 				done = true;
 			} else {
-				const struct ndm_xml_attr_t *user_attr =
-					ndm_xml_node_first_attr(prompt_node, "user");
+				const struct ndm_xml_attr_t *token_attr =
+					ndm_xml_node_first_attr(prompt_node, "token");
 
-				if (user_attr == NULL) {
+				if (token_attr == NULL) {
 					*authenticated = true;
 					done = true;
 				} else {
-					*effective_user = ndm_string_ndup(
-						ndm_xml_attr_value(user_attr),
-						ndm_xml_attr_value_size(user_attr));
+					*token = ndm_string_ndup(
+						ndm_xml_attr_value(token_attr),
+						ndm_xml_attr_value_size(token_attr));
 
-					if (*effective_user == NULL) {
+					if (*token == NULL) {
 						errno = ENOMEM;
 					} else {
 						*authenticated = true;
@@ -1646,6 +1673,60 @@ bool ndm_core_authenticate_ex(
 			}
 
 			ndm_core_response_free(&response);
+		}
+	}
+
+	ndm_xml_document_clear(&request);
+
+	return done;
+}
+
+bool ndm_core_authenticate_local_service(
+		struct ndm_core_t *core,
+		const char *const service,
+		const bool read_only,
+		bool *authenticated)
+{
+	bool done = false;
+	uint8_t request_buffer[NDM_CORE_REQUEST_STATIC_SIZE_];
+	struct ndm_xml_document_t request;
+	struct ndm_xml_node_t *hello_node = NULL;
+	struct ndm_xml_node_t *request_node =
+		__ndm_core_request_document_init(&request,
+			request_buffer, sizeof(request_buffer),
+			core->agent);
+
+	*authenticated = false;
+
+	if (request_node != NULL &&
+		(hello_node = ndm_xml_node_append_child_str(
+			request_node, "hello", "")) != NULL &&
+		ndm_xml_node_append_attr_str(
+			hello_node, "level", "local-service") != NULL &&
+		ndm_xml_node_append_attr_str(
+			hello_node, "remote", "local") != NULL &&
+		ndm_xml_node_append_attr_str(
+			hello_node, "local", "local") != NULL &&
+		ndm_xml_node_append_attr_str(
+			hello_node, "l7-proto", "xml/ci") != NULL &&
+		ndm_xml_node_append_attr_str(
+			hello_node, "l3-proto", "unix") != NULL &&
+		ndm_xml_node_append_attr_str(hello_node, "service", service) != NULL &&
+		ndm_xml_node_append_attr_str(
+			hello_node, "read-only", read_only ? "yes" : "no") != NULL)
+	{
+		struct ndm_core_response_t *response = __ndm_core_do_request(
+			core, NDM_CORE_MODE_NO_CACHE, true, request_node, NULL);
+
+		if (response != NULL) {
+			const struct ndm_xml_node_t *response_node =
+				ndm_core_response_root(response);
+
+			*authenticated =
+				(ndm_xml_node_first_child(response_node, "prompt") != NULL);
+
+			ndm_core_response_free(&response);
+			done = true;
 		}
 	}
 
