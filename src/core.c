@@ -1735,6 +1735,64 @@ bool ndm_core_authenticate_local_service(
 	return done;
 }
 
+bool ndm_core_local_service_update_endpoint(
+		struct ndm_core_t *core,
+		const char *const remote,
+		const char *const local,
+		const char *const l7proto,
+		const char *const l3proto,
+		const char *const scheme,
+		bool *authenticated)
+{
+	bool done = false;
+	uint8_t request_buffer[NDM_CORE_REQUEST_STATIC_SIZE_];
+	struct ndm_xml_document_t request;
+	struct ndm_xml_node_t *hello_node = NULL;
+	struct ndm_xml_node_t *request_node =
+		__ndm_core_request_document_init(&request,
+			request_buffer, sizeof(request_buffer),
+			core->agent);
+
+	*authenticated = false;
+
+	if (request_node != NULL &&
+		(hello_node = ndm_xml_node_append_child_str(
+			request_node, "hello", "")) != NULL &&
+		ndm_xml_node_append_attr_str(
+			hello_node, "level", "local-service") != NULL &&
+		ndm_xml_node_append_attr_str(
+			hello_node, "remote", remote) != NULL &&
+		ndm_xml_node_append_attr_str(
+			hello_node, "local", local) != NULL &&
+		ndm_xml_node_append_attr_str(
+			hello_node, "l7-proto", l7proto) != NULL &&
+		ndm_xml_node_append_attr_str(
+			hello_node, "l3-proto", l3proto) != NULL &&
+		ndm_xml_node_append_attr_str(
+			hello_node, "scheme", scheme) != NULL &&
+		ndm_xml_node_append_attr_str(
+			hello_node, "update-endpoint", "yes") != NULL)
+	{
+		struct ndm_core_response_t *response = __ndm_core_do_request(
+			core, NDM_CORE_MODE_NO_CACHE, true, request_node, NULL);
+
+		if (response != NULL) {
+			const struct ndm_xml_node_t *response_node =
+				ndm_core_response_root(response);
+
+			*authenticated =
+				(ndm_xml_node_first_child(response_node, "prompt") != NULL);
+
+			ndm_core_response_free(&response);
+			done = true;
+		}
+	}
+
+	ndm_xml_document_clear(&request);
+
+	return done;
+}
+
 bool ndm_core_find_command(
 		struct ndm_core_t *core,
 		const char *const command,

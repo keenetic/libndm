@@ -352,6 +352,15 @@ bool ndm_core_authenticate_local_service(
 		const bool read_only,
 		bool *authenticated) NDM_ATTR_WUR;
 
+bool ndm_core_local_service_update_endpoint(
+		struct ndm_core_t *core,
+		const char *const remote,
+		const char *const local,
+		const char *const l7proto,
+		const char *const l3proto,
+		const char *const scheme,
+		bool *authenticated) NDM_ATTR_WUR;
+
 /**
  * Check that a specified NDM command exists.
  *
