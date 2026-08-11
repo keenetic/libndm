@@ -25,7 +25,12 @@
 #include <string.h>
 #include <ctype.h>
 
+#include <ndm/conv.h>
+#include <ndm/net.h>
 #include <ndm/punycode.h>
+
+#include <stdio.h>
+#include <errno.h>
 
 #define min(a, b) ((a) < (b) ? (a) : (b))
 
@@ -297,4 +302,141 @@ fail:
 	*dstlen = di;
 
 	return si;
+}
+
+bool ndm_punycode_decode_utf8(
+		const char* const src,
+		const size_t src_len,
+		char* dst)
+{
+	if (src_len > NDM_NET_DOMAIN_MAX_LEN) {
+		return false;
+	}
+
+	ndm_conv_t cd = ndm_conv_open("UTF-8", "UTF-32");
+
+	if (cd < 0) {
+		return false;
+	}
+
+	char name[NDM_NET_DOMAIN_MAX_LEN + 1];
+
+	memcpy(name, src, src_len);
+	name[src_len] = '\0';
+
+	size_t name_size = strlen(name);
+
+	if (name_size < NDM_NET_DOMAIN_MIN_LEN ||
+		name_size > NDM_NET_DOMAIN_MAX_LEN)
+	{
+		ndm_conv_close(cd);
+
+		return false;
+	}
+
+	size_t off = 0;
+	size_t i = (size_t) -1;
+	bool valid = false;
+
+	do {
+		/* A subdomain name should start with
+		 * an alphanumeric character. */
+
+		++i;
+
+		if (!isalnum(name[i++])) {
+			ndm_conv_close(cd);
+
+			return false;
+		}
+
+		/* the subdomain name should contain
+		 * only alphanumeric characters and '-' symbols.
+		 * It should end with an alphanumeric character
+		 * and to be shorter than @c SUBDOMAIN_MAX_LEN_. */
+
+		const size_t s = i - 1;
+
+		while (
+			i < name_size &&
+			(isalnum(name[i]) || name[i] == '-'))
+		{
+			++i;
+		}
+
+		const size_t l = i - s;
+
+		if (!isalnum(name[i - 1]) ||
+			!(name[i] == '.' || i == name_size) ||
+			l > NDM_NET_SUBDOMAIN_MAX_LEN)
+		{
+			ndm_conv_close(cd);
+
+			return false;
+		}
+
+		if (l > 4 &&
+			name[s + 0] == 'x' &&
+			name[s + 1] == 'n' &&
+			name[s + 2] == '-' &&
+			name[s + 3] == '-')
+		{
+			/*
+			 * ACE encoded IDNA subdomain
+			 */
+
+			const size_t idna_len = l - 4;
+
+			name[i] = '\0';
+
+			uint32_t fqdn_utf32[NDM_NET_SUBDOMAIN_MAX_LEN + 1];
+			size_t out = sizeof(fqdn_utf32) / sizeof(fqdn_utf32[0]);
+			const size_t dec = ndm_punycode_decode(
+				name + s + 4, idna_len, fqdn_utf32, &out);
+
+			if (dec < idna_len) {
+				ndm_conv_close(cd);
+
+				return false;
+			}
+
+			char fqdn_out[4 * (NDM_NET_SUBDOMAIN_MAX_LEN + 1)];
+			const char* inp = (char*)fqdn_utf32;
+			size_t inb = out * sizeof(fqdn_utf32[0]);
+			char* outp = fqdn_out;
+			size_t outb = sizeof(fqdn_out) - 1;
+
+			const size_t ret = ndm_conv(cd, &inp, &inb, &outp, &outb);
+
+			if (ret == (size_t) -1 || inb > 0 || outb < 1) {
+				ndm_conv_close(cd);
+
+				return false;
+			}
+
+			const size_t out_len = sizeof(fqdn_out) - outb - 1;
+
+			memcpy(dst + off, fqdn_out, out_len);
+			dst[off + out_len] = '.';
+			dst[off + out_len + 1] = '\0';
+			off += (out_len + 1);
+		} else
+		{
+			/*
+			 * no punycode at this level
+			 */
+
+			memcpy(dst + off, name + s, l);
+			dst[off + l] = '.';
+			dst[off + l + 1] = '\0';
+			off += (l + 1);
+		}
+
+		valid = true;
+
+	} while (i < name_size && name[i + 1] != '\0');
+
+	ndm_conv_close(cd);
+
+	return valid;
 }

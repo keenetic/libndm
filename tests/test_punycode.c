@@ -1,5 +1,6 @@
 #include <stddef.h>
 #include <string.h>
+#include <ndm/net.h>
 #include <ndm/punycode.h>
 #include "test.h"
 
@@ -73,6 +74,18 @@ static void test_decoder(const char *input, const uint32_t *expected)
 
 	NDM_TEST(n_converted == strlen(input));
 	NDM_TEST(memcmp(dstbuf, expected, unilen(expected)) == 0);
+}
+
+static void test_decoder_utf8(const char *input, const char *output)
+{
+	char out[NDM_NET_DOMAIN_MAX_LEN + 1];
+
+	NDM_TEST(ndm_punycode_decode_utf8(input, strlen(input), out));
+
+	const size_t out_len = strlen(output);
+
+	NDM_TEST(strlen(out) == out_len);
+	NDM_TEST(memcmp(out, output, out_len) == 0);
 }
 
 int main()
@@ -209,6 +222,39 @@ int main()
 
 	for (i = 0; i < sizeof(simple_tests) / sizeof(simple_tests[0]); i++) {
 		test_decoder(simple_tests[i].punycode, simple_tests[i].unicode);
+	}
+
+	struct {
+		const char *punycode;
+		const char *utf8;
+	}
+	utf8_tests[] = {
+		{ "test.com.", "test.com." },
+		{ "test.com", "test.com." },
+		{ "xn--bcher-kva.tld.", "bücher.tld." },
+		{ "xn--bcher-kva.tld", "bücher.tld." },
+		{ "xn--80aa1apod3a5c.temple.xn--j1aef.", "сахарный.temple.ком." },
+		{ "xn--80aa1apod3a5c.temple.xn--j1aef", "сахарный.temple.ком." },
+		{ "xn--fa-hia.de", "faß.de." },
+		{ "xn--3y9a", "ꭠ." },
+		{ "xn--nxasmm1c.com", "βόλος.com." },
+		{ "xn--wgv71a119e.jp", "日本語.jp." },
+		{ "xn--xn--a--gua.pt", "xn--a-ä.pt." },
+		{ "xn--xn--a--gua.pt.", "xn--a-ä.pt." },
+		{ "123456789012345678901234567890123456789012345678901234567890123." \
+		   "123456789012345678901234567890123456789012345678901234567890123" \
+		   ".123456789012345678901234567890123456789012345678901234567890123" \
+		   ".123456789012345678901234567890123456789012345678901234567890b",
+			"123456789012345678901234567890123456789012345678901234567890123." \
+			"123456789012345678901234567890123456789012345678901234567890123." \
+			"123456789012345678901234567890123456789012345678901234567890123." \
+			"123456789012345678901234567890123456789012345678901234567890b." },
+		{ "xn--snl253bgitxhzwu2arn60c", "陋㛼当𤎫竮䗗." },
+		{ "xn--6g3a1x434z.xn--3xa652s5d17u", "走𐹧谷.󠗰ςⴍ." },
+	};
+
+	for (i = 0; i < sizeof(utf8_tests) / sizeof(utf8_tests[0]); i++) {
+		test_decoder_utf8(utf8_tests[i].punycode, utf8_tests[i].utf8);
 	}
 
 	return NDM_TEST_RESULT;

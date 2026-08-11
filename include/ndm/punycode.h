@@ -22,6 +22,7 @@
 #ifndef __NDM_PUNYCODE_H__
 #define __NDM_PUNYCODE_H__
 
+#include <stdbool.h>
 #include <stdint.h>
 #include <stddef.h>
 
@@ -48,6 +49,11 @@ size_t ndm_punycode_decode(
 		const size_t srclen,
 		uint32_t *const dst,
 		size_t *const dstlen);
+
+bool ndm_punycode_decode_utf8(
+		const char* const src,
+		const size_t src_len,
+		char* dst);
 
 #ifdef __cplusplus
 }

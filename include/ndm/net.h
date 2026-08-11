@@ -4,6 +4,10 @@
 #include <stdbool.h>
 #include "attr.h"
 
+#define NDM_NET_DOMAIN_MIN_LEN			1
+#define NDM_NET_DOMAIN_MAX_LEN			253
+#define NDM_NET_SUBDOMAIN_MAX_LEN		63
+
 #ifdef __cplusplus
 extern "C" {
 #endif

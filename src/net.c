@@ -17,11 +17,6 @@
 
 #define RPC_F_CONST_BYPASS				(1 << 2)
 
-#define NDM_NET_DOMAIN_MIN_LEN_			1
-#define NDM_NET_DOMAIN_MAX_LEN_			253
-
-#define NDM_NET_SUBDOMAIN_MAX_LEN_		63
-
 #define NDM_NET_NDN_RPC_PORT_			54321
 #define NDM_NET_NDN_RPC_TIMEOUT_		5000 // ms
 
@@ -47,8 +42,8 @@ bool ndm_net_is_domain_name(const char *const name)
 	size_t name_size = strlen(name);
 	bool valid = false;
 
-	if (name_size >= NDM_NET_DOMAIN_MIN_LEN_ &&
-		name_size <= NDM_NET_DOMAIN_MAX_LEN_)
+	if (name_size >= NDM_NET_DOMAIN_MIN_LEN &&
+		name_size <= NDM_NET_DOMAIN_MAX_LEN)
 	{
 		size_t i = (size_t) -1;
 
@@ -78,7 +73,7 @@ bool ndm_net_is_domain_name(const char *const name)
 				valid =
 					isalnum(name[i - 1]) &&
 					(name[i] == '.' || i == name_size) &&
-					i - s <= NDM_NET_SUBDOMAIN_MAX_LEN_;
+					i - s <= NDM_NET_SUBDOMAIN_MAX_LEN;
 			}
 		} while (valid && i < name_size);
 	}
