@@ -37,11 +37,11 @@ int main()
 	}
 
 	NDM_TEST(ndm_core_authenticate(
-		core, "admin", "1", "cli", &authenticated));
+		core, "test", "admin", "1", "cli", &authenticated));
 	NDM_TEST(!authenticated);
 
 	NDM_TEST(ndm_core_authenticate(
-		core, "admin", "", "cli", &authenticated));
+		core, "test", "admin", "", "cli", &authenticated));
 	NDM_TEST(authenticated);
 
 	r = ndm_core_get_help(core, NDM_CORE_MODE_NO_CACHE, "no service ht");
