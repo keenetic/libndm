@@ -231,6 +231,7 @@ int main()
 	utf8_tests[] = {
 		{ "test.com.", "test.com." },
 		{ "test.com", "test.com." },
+		{ "TeSt.COm", "test.com." },
 		{ "xn--bcher-kva.tld.", "bücher.tld." },
 		{ "xn--bcher-kva.tld", "bücher.tld." },
 		{ "xn--80aa1apod3a5c.temple.xn--j1aef.", "сахарный.temple.ком." },

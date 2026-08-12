@@ -427,6 +427,12 @@ bool ndm_punycode_decode_utf8(
 			 */
 
 			memcpy(dst + off, name + s, l);
+
+			for( size_t j = 0; j < l; ++j )
+			{
+				dst[off + j] = (char)tolower(dst[off + j]);
+			}
+
 			dst[off + l] = '.';
 			dst[off + l + 1] = '\0';
 			off += (l + 1);
